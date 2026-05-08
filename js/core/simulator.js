@@ -38,6 +38,65 @@
     return Math.round(clamp(shots, Math.max(goals, 12), 58));
   }
 
+  function padTimePart(value) {
+    return value < 10 ? "0" + value : String(value);
+  }
+
+  function randomEventTime() {
+    var totalSeconds = Math.floor(Math.random() * 3600);
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+
+    return padTimePart(minutes) + ":" + padTimePart(seconds);
+  }
+
+  function sortByEventTime(a, b) {
+    return a.time.localeCompare(b.time);
+  }
+
+  function eventTimeToSeconds(time) {
+    var parts = String(time || "00:00").split(":");
+    var minutes = parseInt(parts[0], 10) || 0;
+    var seconds = parseInt(parts[1], 10) || 0;
+
+    return minutes * 60 + seconds;
+  }
+
+  function isPenaltyActiveAt(penalty, time) {
+    var penaltyStart = eventTimeToSeconds(penalty.time);
+    var penaltyEnd = penaltyStart + (penalty.minutes || 0) * 60;
+
+    return time >= penaltyStart && time < penaltyEnd;
+  }
+
+  function countActivePenalties(teamId, time, penaltyEvents) {
+    return penaltyEvents.filter(function (penalty) {
+      return penalty.teamId === teamId && isPenaltyActiveAt(penalty, time);
+    }).length;
+  }
+
+  function annotateGoalStrength(scoringEvents, penaltyEvents, homeTeamId, awayTeamId) {
+    return scoringEvents.map(function (event) {
+      var time = eventTimeToSeconds(event.time);
+      var opponentTeamId = event.teamId === homeTeamId ? awayTeamId : homeTeamId;
+      var ownPenalties = countActivePenalties(event.teamId, time, penaltyEvents);
+      var opponentPenalties = countActivePenalties(opponentTeamId, time, penaltyEvents);
+      var strength = "even";
+
+      if (opponentPenalties > ownPenalties) {
+        strength = "powerPlay";
+      } else if (ownPenalties > opponentPenalties) {
+        strength = "shortHanded";
+      }
+
+      return Object.assign({}, event, {
+        strength: strength,
+        isPowerPlayGoal: strength === "powerPlay",
+        isShortHandedGoal: strength === "shortHanded"
+      });
+    });
+  }
+
   function isGoalie(player) {
     return player.type === "goalie" || player.position === "G";
   }
@@ -136,6 +195,8 @@
       var assists = scorer ? pickAssists(skaters, scorer) : [];
 
       events.push({
+        type: "goal",
+        time: randomEventTime(),
         teamId: teamId,
         scorerId: scorer ? scorer.id : null,
         scorerName: scorer ? scorer.name : "Tuntematon",
@@ -146,6 +207,65 @@
           return player.name;
         })
       });
+    }
+
+    return events;
+  }
+
+  function penaltyWeight(player) {
+    return 1 +
+      attribute(player, "checking") * 1.2 +
+      (10 - attribute(player, "stamina")) * 0.4 +
+      (player.position === "D" ? 1.5 : 0);
+  }
+
+  function penaltyMinutes() {
+    var roll = Math.random();
+
+    if (roll < 0.88) {
+      return 2;
+    }
+
+    if (roll < 0.98) {
+      return 4;
+    }
+
+    return 5;
+  }
+
+  function penaltyReason() {
+    var reasons = [
+      "Koukkaaminen",
+      "Kampitus",
+      "Kiinnipitäminen",
+      "Poikittainen maila",
+      "Estäminen",
+      "Korkea maila",
+      "Väkivaltaisuus"
+    ];
+
+    return reasons[Math.floor(Math.random() * reasons.length)];
+  }
+
+  function createPenaltyEvents(teamId, players) {
+    var skaters = getSkaters(players);
+    var penaltyCount = Math.round(clamp(poisson(2.7), 0, 8));
+    var events = [];
+
+    for (var i = 0; i < penaltyCount; i += 1) {
+      var player = weightedRandom(skaters, penaltyWeight);
+
+      if (player) {
+        events.push({
+          type: "penalty",
+          time: randomEventTime(),
+          teamId: teamId,
+          playerId: player.id,
+          playerName: player.name,
+          minutes: penaltyMinutes(),
+          reason: penaltyReason()
+        });
+      }
     }
 
     return events;
@@ -189,6 +309,17 @@
     var homeShots = simulateShots(homeTeam, awayTeam, homeGoals, 1.8);
     var awayShots = simulateShots(awayTeam, homeTeam, awayGoals, 0);
     var minutes = overtime ? 65 : 60;
+    var penaltyEvents = createPenaltyEvents(game.homeId, homePlayers).concat(
+      createPenaltyEvents(game.awayId, awayPlayers)
+    ).sort(sortByEventTime);
+    var scoringEvents = annotateGoalStrength(
+      createScoringEvents(game.homeId, homeGoals, homePlayers).concat(
+        createScoringEvents(game.awayId, awayGoals, awayPlayers)
+      ).sort(sortByEventTime),
+      penaltyEvents,
+      game.homeId,
+      game.awayId
+    );
 
     return Object.assign({}, game, {
       played: true,
@@ -199,9 +330,8 @@
         home: homeShots,
         away: awayShots
       },
-      scoringEvents: createScoringEvents(game.homeId, homeGoals, homePlayers).concat(
-        createScoringEvents(game.awayId, awayGoals, awayPlayers)
-      ),
+      scoringEvents: scoringEvents,
+      penaltyEvents: penaltyEvents,
       goalieStats: {
         home: createGoalieStats(chooseGoalie(homePlayers), awayShots, awayGoals, minutes),
         away: createGoalieStats(chooseGoalie(awayPlayers), homeShots, homeGoals, minutes)

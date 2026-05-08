@@ -16,10 +16,10 @@
     return [
       linkedMetric("Liiga", league.name, "openLeague", "data-league-id", league.id),
       linkedMetric("Manageri", manager.name, "openManager", "data-manager-id", manager.id),
-      metric("Oma joukkue", managerTeam ? managerTeam.shortName : "-"),
-      metric("Joukkueet", league.teamIds.length),
-      metric("Ottelut", progress.played + " / " + progress.total),
-      metric("Kausi", game.season)
+      //metric("Oma joukkue", managerTeam ? managerTeam.shortName : "-"),
+      //metric("Joukkueet", league.teamIds.length),
+      //metric("Ottelut", progress.played + " / " + progress.total),
+      //metric("Kausi", game.season)
     ].join("");
   }
 
@@ -93,7 +93,7 @@
     return (
       '<table aria-label="Pistepörssi">' +
       "<thead><tr>" +
-      "<th>Pelaaja</th><th>O</th><th>M</th><th>S</th><th>P</th>" +
+      "<th>Pelaaja</th><th>O</th><th>M</th><th>S</th><th>P</th><th>RM</th>" +
       "</tr></thead>" +
       "<tbody>" +
       leaders.map(function (row) {
@@ -105,6 +105,7 @@
           "<td>" + row.goals + "</td>" +
           "<td>" + row.assists + "</td>" +
           "<td><strong>" + row.points + "</strong></td>" +
+          "<td>" + row.penaltyMinutes + "</td>" +
           "</tr>"
         );
       }).join("") +
@@ -146,9 +147,22 @@
     return Number(value || 0).toFixed(digits);
   }
 
+  function formatGoalStrength(event) {
+    if (event.isPowerPlayGoal || event.strength === "powerPlay") {
+      return " (YV)";
+    }
+
+    if (event.isShortHandedGoal || event.strength === "shortHanded") {
+      return " (AV)";
+    }
+
+    return "";
+  }
+
   function renderGameDetails(game, home, away) {
     var lines = [];
     var events = game.scoringEvents || [];
+    var penalties = game.penaltyEvents || [];
     var goalieStats = game.goalieStats || {};
 
     if (!game.played) {
@@ -163,7 +177,20 @@
                 ? (event.assistNames.length == 1 ? ", syöttäjä " : ", syöttäjät: ") + event.assistNames.join(", ")
               : ", ei syöttäjää";
 
-            lines.push(team + " " + event.scorerName + assists);
+            lines.push((event.time ? event.time + " " : "") + team + " " + event.scorerName + formatGoalStrength(event) + assists);
+        });
+        lines.push(" ");
+    }
+
+    if (penalties.length) {
+        lines.push("Jäähyt:");
+        penalties.map(function (event) {
+            var team = event.teamId === home.id ? home.shortName : away.shortName;
+            lines.push(
+                (event.time ? event.time + " " : "") +
+                team + " " + event.playerName + " " +
+                (event.minutes == 4 ? "2 + 2" : event.minutes) + " min, " + event.reason
+            );
         });
         lines.push(" ");
     }
@@ -778,10 +805,13 @@
     root.innerHTML =
       '<section class="summary">' + renderSummary(game, league, progress, manager, managerTeam) + "</section>" +
       '<section class="actions" aria-label="Toiminnot">' +
-      '<button class="button" data-action="simulateNext"' + simulationDisabled + ">Seuraava peli</button>" +
-      '<button class="button secondary" data-action="simulateRound"' + simulationDisabled + ">Seuraava kierros</button>" +
-      '<button class="button secondary" data-action="startNextSeason" title="Uusi kausi avautuu, kun kaikki ottelut on pelattu."' + newSeasonDisabled + ">Uusi kausi</button>" +
-      '<button class="button danger" data-action="restartGame">Aloita alusta</button>' +
+      '<div>' +
+      '<button class="button" data-action="simulateNext"' + simulationDisabled + ">Simuloi seuraava peli</button>" +
+      '<button class="button secondary" data-action="simulateRound"' + simulationDisabled + ">Simuloi kierros</button>" +
+      '</div><div>' +
+      '<button class="button secondary" data-action="startNextSeason" title="Uusi kausi avautuu, kun kaikki ottelut on pelattu."' + newSeasonDisabled + ">Seuraava kausi</button>" +
+      '<button class="button danger" data-action="restartGame">Aloita ura alusta</button>' +
+      '</div>' +
       "</section>" +
       '<section class="layout dashboard-layout">' +
       '<article class="panel standings-panel">' +

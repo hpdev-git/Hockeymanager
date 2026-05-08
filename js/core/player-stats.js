@@ -15,7 +15,8 @@
       games: 0,
       goals: 0,
       assists: 0,
-      points: 0
+      points: 0,
+      penaltyMinutes: 0
     };
   }
 
@@ -100,6 +101,14 @@
     });
   }
 
+  function applyPenaltyEvent(rowsByPlayerId, event) {
+    var player = rowsByPlayerId[event.playerId];
+
+    if (player) {
+      player.penaltyMinutes += event.minutes || 0;
+    }
+  }
+
   function applyGoalieResult(row, stats, teamId, winnerTeamId, minutes) {
     if (!row) {
       return;
@@ -165,17 +174,21 @@
       (game.scoringEvents || []).forEach(function (event) {
         applyScoringEvent(rowsByPlayerId, event);
       });
+      (game.penaltyEvents || []).forEach(function (event) {
+        applyPenaltyEvent(rowsByPlayerId, event);
+      });
     });
 
     return Object.keys(rowsByPlayerId).map(function (playerId) {
       return rowsByPlayerId[playerId];
     }).filter(function (row) {
-      return row.points > 0;
+      return row.points > 0 || row.penaltyMinutes > 0;
     }).sort(function (a, b) {
       return (
         b.points - a.points ||
         b.goals - a.goals ||
         b.assists - a.assists ||
+        b.penaltyMinutes - a.penaltyMinutes ||
         a.playerName.localeCompare(b.playerName)
       );
     });

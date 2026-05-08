@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   function goalie(id, teamId, name, birthDate, nationality, handedness, jerseyNumber, reactions, agility, saving, passing, potential) {
     return {
       id: id,
