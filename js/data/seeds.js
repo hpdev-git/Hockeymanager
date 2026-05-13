@@ -4,7 +4,8 @@
     players: window.HockeyManagerPlayers || [],
     leagues: [
       {
-        id: "liiga-1",
+            id: "liiga-1",
+            logo: "logo_missing.svg",
         name: "Mestaruusliiga",
         country: "Suomi",
         level: "Päätaso",
@@ -30,12 +31,13 @@
     teams: [
       {
         id: "karhut",
-        name: "Pohjolan Karhut",
+            name: "Pohjolan Karhut",
+        logo: "logo_missing.svg",
         shortName: "KAR",
         city: "Oulu",
         foundedYear: 1988,
         arena: "Pohjola Areena",
-        coachId: "coach-mikko-laine",
+        coachId: 1,
         colors: {
           primary: "#0d6b5f",
           secondary: "#f2c14e"
@@ -48,12 +50,13 @@
       },
       {
         id: "haukat",
-        name: "Rannan Haukat",
+          name: "Rannan Haukat",
+          logo: "logo_missing.svg",
         shortName: "HAU",
         city: "Turku",
         foundedYear: 1976,
         arena: "Sataman Jäähalli",
-        coachId: "coach-antti-koski",
+        coachId: 2,
         colors: {
           primary: "#1f5aa6",
           secondary: "#e7eef8"
@@ -66,12 +69,13 @@
       },
       {
         id: "salamat",
-        name: "Keskustan Salamat",
+          name: "Keskustan Salamat",
+          logo: "logo_missing.svg",
         shortName: "SAL",
         city: "Tampere",
         foundedYear: 1995,
         arena: "Keskusareena",
-        coachId: "coach-janne-virtanen",
+        coachId: 3,
         colors: {
           primary: "#b5452f",
           secondary: "#f4dfcf"
@@ -84,12 +88,13 @@
       },
       {
         id: "raudat",
-        name: "Idän Raudat",
+          name: "Idän Raudat",
+          logo: "logo_missing.svg",
         shortName: "RAU",
         city: "Kuopio",
         foundedYear: 1982,
         arena: "Rauta Areena",
-        coachId: "coach-petri-niemi",
+        coachId: 4,
         colors: {
           primary: "#343a40",
           secondary: "#b7c5cf"

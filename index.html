@@ -120,6 +120,10 @@
             text-transform: uppercase;
         }
 
+            .label.skill-item {
+                margin-bottom: 8px;
+            }
+
         .value {
             display: block;
             margin-top: 6px;
@@ -157,11 +161,12 @@
 
             .button.secondary {
                 background: var(--surface);
-                color: var(--accent-strong);
+                color: var(--ink);
+                border: 1px solid var(--ink);
             }
 
                 .button.secondary:hover {
-                    background: var(--accent-strong);
+                    background: var(--accent);
                     color: white;
                 }
 
@@ -274,7 +279,7 @@
             padding: 0;
             border: 0;
             background: transparent;
-            color: var(--accent-strong);
+            color: var(--ink);
             font-weight: 800;
             text-align: left;
             cursor: pointer;
@@ -290,6 +295,11 @@
             gap: 6px;
             max-width: 100%;
             min-width: 0;
+        }
+
+        .team-cell-logo {
+            width: 20px;
+            margin: 0 5px;
         }
 
         .manager-star {
@@ -345,6 +355,17 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            text-align: center;
+        }
+
+        .matchup-logo {
+            width: 20px;
+            margin: 0 10px;
+        }
+
+        .matchup-teams {
+            line-height: 20px;
+            vertical-align: top;
         }
 
         .score {
@@ -418,6 +439,7 @@
             font-size: 0.75rem;
             font-weight: 900;
             white-space: nowrap;
+            width: fit-content;
         }
 
         .manager-select {
@@ -501,7 +523,7 @@
         }
 
             .detail-grid.player-skills {
-                display: flex;
+                grid-template-columns: 1fr;
             }
 
         .info-item {
@@ -518,6 +540,11 @@
                 line-height: 1.25;
             }
 
+        .info-item-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
         .detail-grid.player-skills .info-item {
             flex-basis: 0;
             flex-grow: 1;
@@ -526,6 +553,21 @@
             .detail-grid.player-skills .info-item strong {
                 text-align: center;
             }
+
+        .bar {
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar__fill {
+            width: var(--value);
+            height: 100%;
+            background: #22c55e;
+            border-radius: inherit;
+            transition: width 0.25s ease;
+        }
 
         .info-link {
             display: block;

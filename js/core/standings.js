@@ -1,7 +1,8 @@
 (function (namespace) {
   function createRow(team) {
     return {
-      teamId: team.id,
+        teamId: team.id,
+        logo: team.logo,
       teamName: team.name,
       shortName: team.shortName,
       played: 0,

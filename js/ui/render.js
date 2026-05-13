@@ -68,7 +68,7 @@
 
         return (
           "<tr>" +
-          '<td><span class="team-cell">' + managerMarker + '<button class="link-button" data-action="openTeam" data-team-id="' + escapeHtml(row.teamId) + '">' + escapeHtml(row.teamName) + "</button></span></td>" +
+              '<td><span class="team-cell"><img class="team-cell-logo" src="img/' + escapeHtml(row.logo) + '" alt="logo"/><button class="link-button" data-action="openTeam" data-team-id="' + escapeHtml(row.teamId) + '">' + escapeHtml(row.teamName) + "</button>" + managerMarker + "</span></td>" +
           "<td>" + row.played + "</td>" +
           "<td>" + row.wins + "</td>" +
           "<td>" + row.overtimeWins + "</td>" +
@@ -236,7 +236,11 @@
         return (
           '<div class="game' + (isNext ? " next" : "") + '">' +
           '<span class="round">R' + game.round + "</span>" +
-          '<span class="matchup">' + escapeHtml(home.name) + " - " + escapeHtml(away.name) + "</span>" +
+            '<span class="matchup">' +
+            '<img src="img/' + home.logo + '" alt="logo" class="matchup-logo" />' +
+            '<span class="matchup-teams">' + escapeHtml(home.name) + " - " + escapeHtml(away.name) + "</span>" +
+            '<img src="img/' + away.logo + '" alt="logo" class="matchup-logo" />' +
+            "</span>" +
           '<span class="score">' + escapeHtml(score) + "</span>" +
           renderGameDetails(game, home, away) +
           "</div>"
@@ -378,6 +382,18 @@
     );
   }
 
+    function renderSkillItem(label, value) {
+        return (
+            '<div class="info-item">' +
+            '<div class="info-item-header">' +
+            '<span class="label skill-item">' + escapeHtml(label) + "</span>" +
+            '<span class="label">' + formatRating(value) + "</span>" +
+            '</div>' +
+            '<div class="bar" role="progressbar" aria-valuenow="' + escapeHtml(value) + '" aria-valuemin="0" aria-valuemax="10"><div class="bar__fill" style="--value: ' + (value * 10) + '%;"></div></div>' +
+            "</div>"
+        );
+    }
+
   function renderInfoActionItem(label, value, action, dataName, dataValue) {
     return (
       '<div class="info-item">' +
@@ -504,7 +520,7 @@
       '<span class="label">Liiga</span>' +
       "<h2>" + escapeHtml(league.name) + "</h2>" +
       "</div>" +
-      '<img class="league-logo" src="img/leagues/' + escapeHtml(league.id) + '.svg" alt="logo" />' +
+      '<img class="league-logo" src="img/' + escapeHtml(league.logo) + '" alt="logo" />' +
       "</div>" +
     '<div class="detail-grid">' +
     renderInfoItem("Perustettu", league.foundedYear) +
@@ -540,24 +556,24 @@
 
     if (isGoalie(player)) {
       return (
-        renderInfoItem("Reaktiot", formatRating(attributes.reactions)) +
-        renderInfoItem("Ketteryys", formatRating(attributes.agility)) +
-        renderInfoItem("Torjuminen", formatRating(attributes.saving)) +
-        renderInfoItem("Syöttäminen", formatRating(attributes.passing)) +
-        renderInfoItem("Potentiaali", formatRating(attributes.potential))
+        renderSkillItem("Reaktiot", attributes.reactions) +
+        renderSkillItem("Ketteryys", attributes.agility) +
+        renderSkillItem("Torjuminen", attributes.saving) +
+        renderSkillItem("Syöttäminen", attributes.passing) +
+        renderSkillItem("Potentiaali", attributes.potential)
       );
     }
 
     return (
-      renderInfoItem("Luistelutaito", formatRating(attributes.skating)) +
-      renderInfoItem("Laukaisutaito", formatRating(attributes.shooting)) +
-      renderInfoItem("Syöttäminen", formatRating(attributes.passing)) +
-      renderInfoItem("Mailankäsittely", formatRating(attributes.stickhandling)) +
-      renderInfoItem("Taklaaminen", formatRating(attributes.checking)) +
-      renderInfoItem("Pelinäkemys", formatRating(attributes.vision)) +
-      renderInfoItem("Aloitukset", formatRating(attributes.faceoffs)) +
-      renderInfoItem("Kunto", formatRating(attributes.stamina)) +
-      renderInfoItem("Potentiaali", formatRating(attributes.potential))
+      renderSkillItem("Luistelutaito", attributes.skating) +
+      renderSkillItem("Laukaisutaito", attributes.shooting) +
+      renderSkillItem("Syöttäminen", attributes.passing) +
+      renderSkillItem("Mailankäsittely", attributes.stickhandling) +
+      renderSkillItem("Taklaaminen", attributes.checking) +
+      renderSkillItem("Pelinäkemys", attributes.vision) +
+      renderSkillItem("Aloitukset", attributes.faceoffs) +
+      renderSkillItem("Kunto", attributes.stamina) +
+      renderSkillItem("Potentiaali", attributes.potential)
     );
   }
 
@@ -579,21 +595,20 @@
     root.innerHTML =
       '<section class="team-detail player-detail" style="' + style + '">' +
       '<div class="detail-hero">' +
-      '<div class="swatch"></div>' +
       '<div class="detail-title">' +
       '<span class="label">Pelaaja</span>' +
       "<h2>" + escapeHtml(player.name) + "</h2>" +
       '<p class="muted">' + escapeHtml(displayValue(sourceTeam ? sourceTeam.name : null)) + " / " + escapeHtml(league.name) + "</p>" +
       "</div>" +
-      '<span class="badge">' + escapeHtml(isGoalie(player) ? "Maalivahti" : player.position) + "</span>" +
+      '<img class="league-logo" src="img/player_missing.svg" alt="player" />' +
       "</div>" +
+    
       '<div class="detail-grid">' +
     renderInfoItem("Syntymäaika", getDate(player.birthDate) + " (" + getAge(player.birthDate, game.season) + " vuotta)") +
     renderInfoItem("Kansallisuus", player.nationality) +
-    renderInfoItem("Joukkue", sourceTeam ? sourceTeam.name : null) +
     "</div>" +
     '<div class="detail-grid">' +
-    (isGoalie(player) ? "" : renderInfoItem("Pelipaikka", player.position)) +
+    renderInfoItem("Pelipaikka", player.position) +
     renderInfoItem("Kätisyys", player.handedness) +
     renderInfoItem("Pelinumero", player.jerseyNumber) +
     "</div>" +
@@ -629,25 +644,24 @@
     root.innerHTML =
       '<section class="team-detail coach-detail" style="--team-primary: var(--accent); --team-secondary: var(--gold)">' +
       '<div class="detail-hero">' +
-      '<div class="swatch"></div>' +
       '<div class="detail-title">' +
       '<span class="label">Valmentaja</span>' +
       "<h2>" + escapeHtml(coach.name) + "</h2>" +
       '<p class="muted">' + escapeHtml(displayValue(sourceTeam ? sourceTeam.name : null)) + " / " + escapeHtml(league.name) + "</p>" +
-      "</div>" +
-      '<img class="logo" src="img/coaches/' + escapeHtml(coach.id) + '.svg" alt="coach">' +
+    "</div>" +
+    '<img class="league-logo" src="img/player_missing.svg" alt="coach" />' +
       "</div>" +
       '<div class="detail-grid">' +
       renderInfoItem("Syntymäaika", getDate(coach.birthDate) + " (" + getAge(coach.birthDate, game.season) + " vuotta)") +
       renderInfoItem("Kansallisuus", coach.nationality) +
-    renderInfoItem("Joukkue", sourceTeam ? sourceTeam.name : null) +
     "</div>" +
     '<div class="section-head"><h2>Valmennustaidot</h2></div>' + 
-    '<div class="detail-grid">' +
-      renderInfoItem("Hyökkäys", coach.skills.offense + " / 10") +
-      renderInfoItem("Puolustus", coach.skills.defense + " / 10") +
-      renderInfoItem("Maalivahdit", coach.skills.goalie + " / 10") +
-      renderInfoItem("Erikoistilanteet", coach.skills.specialTeams + " / 10") +
+    '<div class="detail-grid player-skills">' +
+      renderSkillItem("Hyökkäys", coach.skills.offense) +
+      renderSkillItem("Puolustus", coach.skills.defense) +
+      renderSkillItem("Maalivahdit", coach.skills.goalie) +
+      renderSkillItem("Erikoistilanteet", coach.skills.specialTeams) +
+      renderSkillItem("Johtajuus", coach.skills.leadership) +
       "</div>" +
       '<div class="actions">' +
       (sourceTeam ? '<button class="button secondary" data-action="backToTeam">Takaisin joukkueeseen</button>' : '<button class="button secondary" data-action="backToDashboard">Takaisin</button>') +
@@ -671,13 +685,13 @@
     root.innerHTML =
       '<section class="team-detail" style="' + teamStyle(team) + '">' +
       '<div class="detail-hero">' +
-      '<div class="swatch"></div>' +
       '<div class="detail-title">' +
       '<span class="label">Joukkue</span>' +
       "<h2>" + escapeHtml(team.name) + "</h2>" +
       '<p class="muted">' + escapeHtml(team.city) + " / " + escapeHtml(league.name) + "</p>" +
-      "</div>" +
       (team.id === game.managerTeamId ? '<span class="badge">Manageroitava</span>' : "") +
+      "</div>" +
+      '<img class="league-logo" src="img/logo_missing.svg" alt="logo" />' +
       "</div>" +
       '<div class="detail-grid">' +
     renderInfoItem("Perustettu", team.foundedYear) +
